@@ -19,6 +19,8 @@ struct TimelineTab: View {
   @State private var didAppear: Bool = false
   @State private var timeline: TimelineFilter
   @State private var scrollToTopSignal: Int = 0
+  
+  @State private var showMasking: Bool = false
 
   @AppStorage("last_timeline_filter") public var lastTimelineFilter: TimelineFilter = .home
 
@@ -92,67 +94,7 @@ struct TimelineTab: View {
     .withSafariRouter()
     .environmentObject(routerPath)
   }
-
-  @ViewBuilder
-  private var timelineFilterButton: some View {
-    if timeline.supportNewestPagination {
-      Button {
-        self.timeline = .latest
-      } label: {
-        Label(TimelineFilter.latest.localizedTitle(), systemImage: TimelineFilter.latest.iconName() ?? "")
-      }
-      .keyboardShortcut("r", modifiers: .command)
-      Divider()
-    }
-    ForEach(TimelineFilter.availableTimeline(client: client), id: \.self) { timeline in
-      Button {
-        self.timeline = timeline
-      } label: {
-        Label(timeline.localizedTitle(), systemImage: timeline.iconName() ?? "")
-      }
-    }
-    if !currentAccount.lists.isEmpty {
-      Menu("timeline.filter.lists") {
-        ForEach(currentAccount.sortedLists) { list in
-          Button {
-            timeline = .list(list: list)
-          } label: {
-            Label(list.title, systemImage: "list.bullet")
-          }
-        }
-      }
-    }
-
-    if !currentAccount.tags.isEmpty {
-      Menu("timeline.filter.tags") {
-        ForEach(currentAccount.sortedTags) { tag in
-          Button {
-            timeline = .hashtag(tag: tag.name, accountId: nil)
-          } label: {
-            Label("#\(tag.name)", systemImage: "number")
-          }
-        }
-      }
-    }
-
-    Menu("timeline.filter.local") {
-      ForEach(preferences.remoteLocalTimelines, id: \.self) { server in
-        Button {
-          timeline = .remoteLocal(server: server, filter: .local)
-        } label: {
-          VStack {
-            Label(server, systemImage: "dot.radiowaves.right")
-          }
-        }
-      }
-      Button {
-        routerPath.presentedSheet = .addRemoteLocalTimeline
-      } label: {
-        Label("timeline.filter.add-local", systemImage: "badge.plus.radiowaves.right")
-      }
-    }
-  }
-
+  
   private var addAccountButton: some View {
     Button {
       routerPath.presentedSheet = .addAccount
@@ -164,11 +106,6 @@ struct TimelineTab: View {
 
   @ToolbarContentBuilder
   private var toolbarView: some ToolbarContent {
-    if canFilterTimeline {
-      ToolbarTitleMenu {
-        timelineFilterButton
-      }
-    }
     if client.isAuth {
       if UIDevice.current.userInterfaceIdiom != .pad {
         ToolbarItem(placement: .navigationBarLeading) {

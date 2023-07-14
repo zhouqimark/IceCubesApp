@@ -15,9 +15,11 @@ public struct TimelineView: View {
   @Environment(\.scenePhase) private var scenePhase
   @EnvironmentObject private var theme: Theme
   @EnvironmentObject private var account: CurrentAccount
+  @EnvironmentObject private var preferences: UserPreferences
   @EnvironmentObject private var watcher: StreamWatcher
   @EnvironmentObject private var client: Client
   @EnvironmentObject private var routerPath: RouterPath
+  @EnvironmentObject private var maskingVisible: MaskingVisible
 
   @StateObject private var viewModel = TimelineViewModel()
   @StateObject private var prefetcher = TimelinePrefetcher()
@@ -28,6 +30,8 @@ public struct TimelineView: View {
   @Binding var timeline: TimelineFilter
   @Binding var scrollToTopSignal: Int
   private let canFilterTimeline: Bool
+  
+  private let toolbarTitleIcon = Image(systemName: "chevron.down.circle")
 
   public init(timeline: Binding<TimelineFilter>, scrollToTopSignal: Binding<Int>, canFilterTimeline: Bool) {
     _timeline = timeline
@@ -86,41 +90,7 @@ public struct TimelineView: View {
       })
     }
     .toolbar {
-      ToolbarItem(placement: .principal) {
-        VStack(alignment: .center) {
-          switch timeline {
-          case let .remoteLocal(_, filter):
-            Text(filter.localizedTitle())
-              .font(.headline)
-            Text(timeline.localizedTitle())
-              .font(.caption)
-              .foregroundColor(.gray)
-          default:
-            Text(timeline.localizedTitle())
-              .font(.headline)
-          }
-        }
-        .accessibilityRepresentation {
-          switch timeline {
-            case let .remoteLocal(_, filter):
-              if canFilterTimeline {
-                Menu(filter.localizedTitle()) {}
-              } else {
-                Text(filter.localizedTitle())
-              }
-            default:
-              if canFilterTimeline {
-                Menu(timeline.localizedTitle()) {}
-              } else {
-                Text(timeline.localizedTitle())
-              }
-
-          }
-        }
-        .accessibilityAddTraits(.isHeader)
-        .accessibilityRemoveTraits(.isButton)
-        .accessibilityRespondsToUserInteraction(canFilterTimeline)
-      }
+      toolbarTitleView
     }
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
@@ -173,6 +143,138 @@ public struct TimelineView: View {
         break
       }
     })
+  }
+  
+  @ToolbarContentBuilder
+  private var toolbarTitleView: some ToolbarContent {
+    ToolbarItem(placement: .principal) {
+      Menu {
+        if canFilterTimeline {
+          timelineFilterButton
+        }
+      } label: {
+        ZStack(alignment: Alignment(horizontal: .center, vertical: .center)) {
+          VStack(alignment: .center) {
+            switch timeline {
+            case let .remoteLocal(_, filter):
+              Text(filter.localizedTitle())
+                .font(.headline)
+              Text(timeline.localizedTitle())
+                .font(.caption)
+                .foregroundColor(.gray)
+            default:
+              Text(timeline.localizedTitle())
+                .font(.headline)
+            }
+          }
+          .aspectRatio(contentMode: .fit)
+          .foregroundColor(.black)
+          .alignmentGuide(HorizontalAlignment.center, computeValue: { d in
+            d[HorizontalAlignment.center] + d.width / 2 + 2.5
+          })
+          .accessibilityRepresentation {
+            switch timeline {
+            case let .remoteLocal(_, filter):
+              if canFilterTimeline {
+                Menu(filter.localizedTitle()) {}
+              } else {
+                Text(filter.localizedTitle())
+              }
+            default:
+              if canFilterTimeline {
+                Menu(timeline.localizedTitle()) {}
+              } else {
+                Text(timeline.localizedTitle())
+              }
+
+            }
+          }
+          .accessibilityAddTraits(.isHeader)
+          .accessibilityRemoveTraits(.isButton)
+          .accessibilityRespondsToUserInteraction(canFilterTimeline)
+
+          toolbarTitleIcon
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 15, height: 15)
+            .foregroundColor(Color.gray.opacity(0.7))
+            .alignmentGuide(HorizontalAlignment.center) { d in
+              return d[HorizontalAlignment.center] - d.width / 2 - 2.5
+            }
+        }
+      }
+      .onTapGesture {
+        maskingVisible.toggle()
+      }
+    }
+  }
+  
+  @ViewBuilder
+  private var timelineFilterButton: some View {
+    ZStack {
+      if timeline.supportNewestPagination {
+        Button {
+          maskingVisible.toggle()
+          self.timeline = .latest
+        } label: {
+          Label(TimelineFilter.latest.localizedTitle(), systemImage: TimelineFilter.latest.iconName() ?? "")
+        }
+        .keyboardShortcut("r", modifiers: .command)
+        Divider()
+      }
+      ForEach(TimelineFilter.availableTimeline(client: client), id: \.self) { timeline in
+        Button {
+          maskingVisible.toggle()
+          self.timeline = timeline
+        } label: {
+          Label(timeline.localizedTitle(), systemImage: timeline.iconName() ?? "")
+        }
+      }
+      if !account.lists.isEmpty {
+        Menu("timeline.filter.lists") {
+          ForEach(account.sortedLists) { list in
+            Button {
+              maskingVisible.toggle()
+              timeline = .list(list: list)
+            } label: {
+              Label(list.title, systemImage: "list.bullet")
+            }
+          }
+        }
+      }
+      
+      if !account.tags.isEmpty {
+        Menu("timeline.filter.tags") {
+          ForEach(account.sortedTags) { tag in
+            Button {
+              maskingVisible.toggle()
+              timeline = .hashtag(tag: tag.name, accountId: nil)
+            } label: {
+              Label("#\(tag.name)", systemImage: "number")
+            }
+          }
+        }
+      }
+      
+      Menu("timeline.filter.local") {
+        ForEach(preferences.remoteLocalTimelines, id: \.self) { server in
+          Button {
+            maskingVisible.toggle()
+            timeline = .remoteLocal(server: server, filter: .local)
+          } label: {
+            VStack {
+              Label(server, systemImage: "dot.radiowaves.right")
+            }
+          }
+        }
+        Button {
+          maskingVisible.toggle()
+          routerPath.presentedSheet = .addRemoteLocalTimeline
+        } label: {
+          Label("timeline.filter.add-local", systemImage: "badge.plus.radiowaves.right")
+        }
+      }
+    }
   }
 
   @ViewBuilder

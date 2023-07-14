@@ -96,6 +96,7 @@
 		9FFF6784299B7D4400FE700A /* LRUCache in Frameworks */ = {isa = PBXBuildFile; productRef = 9FFF6783299B7D4400FE700A /* LRUCache */; };
 		C9B22677297F6C2E001F9EFE /* ContentSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B22676297F6C2E001F9EFE /* ContentSettingsView.swift */; };
 		D08A9C3529956CFA00204A4A /* SwipeActionsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A9C3429956CFA00204A4A /* SwipeActionsSettingsView.swift */; };
+		DA5725C82A5F295D00AB5370 /* ViewModifier in Frameworks */ = {isa = PBXBuildFile; productRef = DA5725C72A5F295D00AB5370 /* ViewModifier */; };
 		E92817FA298443D600875FD1 /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = E92817F9298443D600875FD1 /* Models */; };
 		E92817FC298443D600875FD1 /* Network in Frameworks */ = {isa = PBXBuildFile; productRef = E92817FB298443D600875FD1 /* Network */; };
 		E92817FE29844DB700875FD1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E92817FD29844DB700875FD1 /* Assets.xcassets */; };
@@ -261,6 +262,7 @@
 		C4FBCF6F298FD88A0015DF22 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C9B22676297F6C2E001F9EFE /* ContentSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSettingsView.swift; sourceTree = "<group>"; };
 		D08A9C3429956CFA00204A4A /* SwipeActionsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeActionsSettingsView.swift; sourceTree = "<group>"; };
+		DA5725C62A5F273E00AB5370 /* ViewModifier */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ViewModifier; path = Packages/ViewModifier; sourceTree = "<group>"; };
 		DD31E2E5297FB68B00A4BE29 /* IceCubesApp.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = IceCubesApp.xcconfig; sourceTree = "<group>"; };
 		E92817FD29844DB700875FD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E970C10929845A9400E88A8C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -316,6 +318,7 @@
 				9F7335ED2967463400AFF0BA /* AVKit.framework in Frameworks */,
 				9F2A540C29699705009B2D7C /* RevenueCat in Frameworks */,
 				065FA1FE29866CD600012EA0 /* LRUCache in Frameworks */,
+				DA5725C82A5F295D00AB5370 /* ViewModifier in Frameworks */,
 				9F2A540E2969A0B0009B2D7C /* StoreKit.framework in Frameworks */,
 				9F55C6902955993C00F94077 /* Explore in Frameworks */,
 				9FAE4ACE29379A5A00772766 /* KeychainSwift in Frameworks */,
@@ -451,6 +454,7 @@
 		9FBFE630292A715500C250E9 = {
 			isa = PBXGroup;
 			children = (
+				DA5725C62A5F273E00AB5370 /* ViewModifier */,
 				DD31E2E5297FB68B00A4BE29 /* IceCubesApp.xcconfig */,
 				9F7D939529800B0300EE6B7A /* IceCubesApp-release.xcconfig */,
 				9FBFE63B292A715500C250E9 /* IceCubesApp */,
@@ -643,6 +647,7 @@
 				9F2A540B29699705009B2D7C /* RevenueCat */,
 				9FE3DB56296FEFCA00628CB0 /* AppAccount */,
 				065FA1FD29866CD600012EA0 /* LRUCache */,
+				DA5725C72A5F295D00AB5370 /* ViewModifier */,
 			);
 			productName = IceCubesApp;
 			productReference = 9FBFE639292A715500C250E9 /* IceCubesApp.app */;
@@ -1569,6 +1574,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 065FA1FC29866CD600012EA0 /* XCRemoteSwiftPackageReference "LRUCache" */;
 			productName = LRUCache;
+		};
+		DA5725C72A5F295D00AB5370 /* ViewModifier */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ViewModifier;
 		};
 		E92817F9298443D600875FD1 /* Models */ = {
 			isa = XCSwiftPackageProductDependency;
