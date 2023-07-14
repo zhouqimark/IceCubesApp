@@ -141,7 +141,7 @@ struct AddRemoteTimelineView: View {
     showToast = true
   }
   
-  struct TWToastView: View {
+  struct ToastView: View {
     @Binding var isShow: Bool
     let info: LocalizedStringKey
     @State private var isShowAnimation: Bool = true
@@ -189,7 +189,7 @@ extension View {
     ZStack(alignment: .bottom) {
       self
       if isShow.wrappedValue {
-        AddRemoteTimelineView.TWToastView(isShow:isShow, info: LocalizedStringKey(info), duration: _duration)
+        AddRemoteTimelineView.ToastView(isShow: isShow, info: LocalizedStringKey(info), duration: _duration)
       }
     }
   }

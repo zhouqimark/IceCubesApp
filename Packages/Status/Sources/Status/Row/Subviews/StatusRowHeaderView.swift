@@ -6,6 +6,7 @@ import SwiftUI
 struct StatusRowHeaderView: View {
   @Environment(\.isInCaptureMode) private var isInCaptureMode: Bool
   @EnvironmentObject private var theme: Theme
+  @EnvironmentObject private var maskingVisible: MaskingVisible
 
   let viewModel: StatusRowViewModel
 
@@ -30,7 +31,9 @@ struct StatusRowHeaderView: View {
     }
     .accessibilityActions {
       if viewModel.isFocused {
-        StatusRowContextMenu(viewModel: viewModel)
+        StatusRowContextMenu(viewModel: viewModel, maskingToggleAction: { maskingVisible in
+          maskingVisible.toggle()
+        })
       }
     }
   }
@@ -112,12 +115,14 @@ struct StatusRowHeaderView: View {
 
   private var contextMenuButton: some View {
     Menu {
-      StatusRowContextMenu(viewModel: viewModel)
-        .onAppear {
-          Task {
-            await viewModel.loadAuthorRelationship()
-          }
+      StatusRowContextMenu(viewModel: viewModel, maskingToggleAction: { maskingVisible in
+        maskingVisible.toggle()
+      })
+      .onAppear {
+        Task {
+          await viewModel.loadAuthorRelationship()
         }
+      }
     } label: {
       Image(systemName: "ellipsis")
         .frame(width: 40, height: 40)
@@ -125,6 +130,9 @@ struct StatusRowHeaderView: View {
     .menuStyle(.borderlessButton)
     .foregroundColor(.gray)
     .contentShape(Rectangle())
+    .onTapGesture {
+      maskingVisible.toggle()
+    }
     .accessibilityHidden(true)
   }
 }

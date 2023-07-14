@@ -6,6 +6,7 @@ import Env
 import KeychainSwift
 import Network
 import RevenueCat
+import ViewModifier
 import SwiftUI
 import Timeline
 
@@ -24,6 +25,7 @@ struct IceCubesApp: App {
   @StateObject private var quickLook = QuickLook()
   @StateObject private var theme = Theme.shared
   @StateObject private var sidebarRouterPath = RouterPath()
+  @StateObject private var maskingVisible: MaskingVisible = MaskingVisible()
 
   @State private var selectedTab: Tab = .timeline
   @State private var popToRootTab: Tab = .other
@@ -37,6 +39,7 @@ struct IceCubesApp: App {
   var body: some Scene {
     WindowGroup {
       appView
+        .enableMasking(isPresented: maskingVisible)
         .applyTheme(theme)
         .onAppear {
           setNewClientsInEnv(client: appAccountsManager.currentClient)
@@ -52,6 +55,7 @@ struct IceCubesApp: App {
         .environmentObject(theme)
         .environmentObject(watcher)
         .environmentObject(pushNotificationsService)
+        .environmentObject(maskingVisible)
         .environment(\.isSupporter, isSupporter)
         .fullScreenCover(item: $quickLook.url, content: { url in
           QuickLookPreview(selectedURL: url, urls: quickLook.urls)

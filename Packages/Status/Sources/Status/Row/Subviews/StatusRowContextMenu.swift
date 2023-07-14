@@ -13,9 +13,11 @@ struct StatusRowContextMenu: View {
   @EnvironmentObject private var account: CurrentAccount
   @EnvironmentObject private var currentInstance: CurrentInstance
   @EnvironmentObject private var statusDataController: StatusDataController
+  @EnvironmentObject private var maskingVisible: MaskingVisible
 
   @ObservedObject var viewModel: StatusRowViewModel
-
+  var maskingToggleAction: ((MaskingVisible) -> Void)? = nil
+  
   var boostLabel: some View {
     if self.viewModel.status.visibility == .priv && self.viewModel.status.account.id == self.account.account?.id {
       if self.statusDataController.isReblogged {
@@ -34,23 +36,24 @@ struct StatusRowContextMenu: View {
     if !viewModel.isRemote {
       Button { Task {
         await statusDataController.toggleFavorite(remoteStatus: nil)
-      } } label: {
+      }; maskingToggleAction?(maskingVisible) } label: {
         Label(statusDataController.isFavorited ? "status.action.unfavorite" : "status.action.favorite", systemImage: "star")
       }
       Button { Task {
         await statusDataController.toggleReblog(remoteStatus: nil)
-      } } label: {
+      }; maskingToggleAction?(maskingVisible) } label: {
         boostLabel
       }
       .disabled(viewModel.status.visibility == .direct || viewModel.status.visibility == .priv && viewModel.status.account.id != account.account?.id)
       Button { Task {
         await statusDataController.toggleBookmark(remoteStatus: nil)
-      } } label: {
+      }; maskingToggleAction?(maskingVisible) } label: {
         Label(statusDataController.isBookmarked ? "status.action.unbookmark" : "status.action.bookmark",
               systemImage: "bookmark")
       }
       Button {
         viewModel.routerPath.presentedSheet = .replyToStatusEditor(status: viewModel.status)
+        maskingToggleAction?(maskingVisible)
       } label: {
         Label("status.action.reply", systemImage: "arrowshape.turn.up.left")
       }
@@ -59,6 +62,7 @@ struct StatusRowContextMenu: View {
     if viewModel.status.visibility == .pub, !viewModel.isRemote {
       Button {
         viewModel.routerPath.presentedSheet = .quoteStatusEditor(status: viewModel.status)
+        maskingToggleAction?(maskingVisible)
       } label: {
         Label("status.action.quote", systemImage: "quote.bubble")
       }
@@ -105,6 +109,7 @@ struct StatusRowContextMenu: View {
           if let image = renderer.uiImage {
             viewModel.routerPath.presentedSheet = .shareImage(image: image, status: viewModel.status)
           }
+          maskingToggleAction?(maskingVisible)
         } label: {
           Label("status.action.share-image", systemImage: "photo")
         }
@@ -112,19 +117,21 @@ struct StatusRowContextMenu: View {
     }
 
     if let url = URL(string: viewModel.status.reblog?.url ?? viewModel.status.url ?? "") {
-      Button { UIApplication.shared.open(url) } label: {
+      Button { UIApplication.shared.open(url); maskingToggleAction?(maskingVisible) } label: {
         Label("status.action.view-in-browser", systemImage: "safari")
       }
     }
 
     Button {
       UIPasteboard.general.string = viewModel.status.reblog?.content.asRawText ?? viewModel.status.content.asRawText
+      maskingToggleAction?(maskingVisible)
     } label: {
       Label("status.action.copy-text", systemImage: "doc.on.doc")
     }
 
     Button {
       UIPasteboard.general.string = viewModel.status.reblog?.url ?? viewModel.status.url
+      maskingToggleAction?(maskingVisible)
     } label: {
       Label("status.action.copy-link", systemImage: "link")
     }
@@ -135,6 +142,7 @@ struct StatusRowContextMenu: View {
         Task {
           await viewModel.translate(userLang: lang)
         }
+        maskingToggleAction?(maskingVisible)
       } label: {
         Label("status.action.translate", systemImage: "captions.bubble")
       }
@@ -144,6 +152,7 @@ struct StatusRowContextMenu: View {
           Task {
             await viewModel.translateWithDeepL(userLang: lang)
           }
+          maskingToggleAction?(maskingVisible)
         } label: {
           Label("status.action.translate-with-deepl", systemImage: "captions.bubble")
         }
@@ -160,18 +169,20 @@ struct StatusRowContextMenu: View {
               await viewModel.pin()
             }
           }
+          maskingToggleAction?(maskingVisible)
         } label: {
           Label(viewModel.isPinned ? "status.action.unpin" : "status.action.pin", systemImage: viewModel.isPinned ? "pin.fill" : "pin")
         }
         if currentInstance.isEditSupported {
           Button {
             viewModel.routerPath.presentedSheet = .editStatusEditor(status: viewModel.status)
+            maskingToggleAction?(maskingVisible)
           } label: {
             Label("status.action.edit", systemImage: "pencil")
           }
         }
         Button(role: .destructive,
-               action: { viewModel.showDeleteAlert = true },
+               action: { viewModel.showDeleteAlert = true; maskingToggleAction?(maskingVisible) },
                label: { Label("status.action.delete", systemImage: "trash") })
       }
     } else {
@@ -179,11 +190,13 @@ struct StatusRowContextMenu: View {
         Section(viewModel.status.reblog?.account.acct ?? viewModel.status.account.acct) {
           Button {
             viewModel.routerPath.presentedSheet = .mentionStatusEditor(account: viewModel.status.reblog?.account ?? viewModel.status.account, visibility: .pub)
+            maskingToggleAction?(maskingVisible)
           } label: {
             Label("status.action.mention", systemImage: "at")
           }
           Button {
             viewModel.routerPath.presentedSheet = .mentionStatusEditor(account: viewModel.status.reblog?.account ?? viewModel.status.account, visibility: .direct)
+            maskingToggleAction?(maskingVisible)
           } label: {
             Label("status.action.message", systemImage: "tray.full")
           }
@@ -199,6 +212,7 @@ struct StatusRowContextMenu: View {
                   print("Error while unblocking: \(error.localizedDescription)")
                 }
               }
+              maskingToggleAction?(maskingVisible)
             } label: {
               Label("account.action.unblock", systemImage: "person.crop.circle.badge.exclamationmark")
             }
@@ -212,6 +226,7 @@ struct StatusRowContextMenu: View {
                   print("Error while blocking: \(error.localizedDescription)")
                 }
               }
+              maskingToggleAction?(maskingVisible)
             } label: {
               Label("account.action.block", systemImage: "person.crop.circle.badge.xmark")
             }
@@ -227,6 +242,7 @@ struct StatusRowContextMenu: View {
                   print("Error while unmuting: \(error.localizedDescription)")
                 }
               }
+              maskingToggleAction?(maskingVisible)
             } label: {
               Label("account.action.unmute", systemImage: "speaker")
             }
@@ -242,6 +258,7 @@ struct StatusRowContextMenu: View {
                       print("Error while muting: \(error.localizedDescription)")
                     }
                   }
+                  maskingToggleAction?(maskingVisible)
                 }
               }
             } label: {
@@ -254,6 +271,7 @@ struct StatusRowContextMenu: View {
       Section {
         Button(role: .destructive) {
           viewModel.routerPath.presentedSheet = .report(status: viewModel.status.reblogAsAsStatus ?? viewModel.status)
+          maskingToggleAction?(maskingVisible)
         } label: {
           Label("status.action.report", systemImage: "exclamationmark.bubble")
         }
