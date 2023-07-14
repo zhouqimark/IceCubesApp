@@ -4,7 +4,7 @@ import SwiftUI
 private struct TouchGestureViewModifier: ViewModifier {
   @GestureState private var triggerOnce: Bool = false
   private var onTouch: (CGPoint) -> Void
-  public func body(content: Content) -> some View {
+  func body(content: Content) -> some View {
     content
       .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
         .updating($triggerOnce) { value, state, _ in
