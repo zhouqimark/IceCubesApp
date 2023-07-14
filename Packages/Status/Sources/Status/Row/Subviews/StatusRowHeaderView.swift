@@ -130,6 +130,9 @@ struct StatusRowHeaderView: View {
     .menuStyle(.borderlessButton)
     .foregroundColor(.gray)
     .contentShape(Rectangle())
+    .onTapGesture {
+      maskingVisible.toggle()
+    }
     .accessibilityHidden(true)
   }
 }
